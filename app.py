@@ -28,7 +28,7 @@ if not api_key:
 client = genai.Client(api_key=api_key)
 
 # Definir el modelo a utilizar
-MODEL_NAME = "gemini-2.5-flash"
+MODEL_NAME = "gemini-2.5-flash-lite"
 
 # 2. Inicializar la sesión de chat y el historial en st.session_state
 if "chat_session" not in st.session_state:
