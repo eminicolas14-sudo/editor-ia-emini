@@ -10,7 +10,49 @@ st.set_page_config(
     page_icon="📝",
     layout="centered"
 )
-
+st.markdown("""
+    <style>
+    /* Fondo principal y tipografía */
+    .stApp {
+        background-color: #0e1117;
+        color: #f0f2f6;
+    }
+    
+    /* Personalización de la barra lateral */
+    [data-testid="stSidebar"] {
+        background-color: #161b22;
+        border-right: 1px solid #30363d;
+    }
+    
+    /* Cajas de chat del usuario */
+    [data-testid="stChatMessage"]:nth-child(odd) {
+        background-color: #1f242d;
+        border: 1px solid #30363d;
+        border-radius: 12px;
+    }
+    
+    /* Cajas de chat del asistente (IA) */
+    [data-testid="stChatMessage"]:nth-child(even) {
+        background-color: #11141b;
+        border: 1px solid #21262d;
+        border-radius: 12px;
+    }
+    
+    /* Botones principales con un toque de color vibrante */
+    .stButton>button {
+        background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    .stButton>button:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
+    }
+    </style>
+""", unsafe_allow_html=True)
 st.title("📝 Redactor y Editor Multimodal con Gemini")
 st.write("Pega tu texto, o adjunta una imagen o PDF en la barra lateral para que la IA lo analice, corrija y mejore.")
 
