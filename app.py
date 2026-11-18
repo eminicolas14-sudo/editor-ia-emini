@@ -53,7 +53,7 @@ st.markdown("""
     }
     </style>
 """, unsafe_allow_html=True)
-st.title("📝 Redactor y Editor Multimodal con Gemini")
+
 st.write("Pega tu texto, o adjunta una imagen o PDF en la barra lateral para que la IA lo analice, corrija y mejore.")
 
 # 1. Configurar la API Key desde los Secrets de Streamlit o variables de entorno
