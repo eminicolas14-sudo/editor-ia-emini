@@ -10,9 +10,10 @@ st.set_page_config(
     page_icon="📝",
     layout="centered"
 )
-st.markdown(st.markdown("""
+
+# Estilos personalizados (Fondo e interfaz)
+st.markdown("""
     <style>
-    /* Fondo principal con tu imagen de IA */
     .stApp {
         background-image: url("https://raw.githubusercontent.com/eminicolas14-sudo/editor-ia-emini/main/jpg.webp");
         background-size: cover;
@@ -20,8 +21,6 @@ st.markdown(st.markdown("""
         background-repeat: no-repeat;
         background-attachment: fixed;
     }
-    
-    /* Capa oscura semitransparente para que el chat se lea con total nitidez */
     .stApp::before {
         content: "";
         position: absolute;
@@ -32,27 +31,19 @@ st.markdown(st.markdown("""
         background-color: rgba(14, 17, 23, 0.82);
         z-index: 0;
     }
-    
-    /* Mantener el contenido por encima del fondo */
     .stApp > * {
         position: relative;
         z-index: 1;
     }
-    
-    /* Estilo de la barra lateral translúcida */
     [data-testid="stSidebar"] {
         background-color: rgba(22, 27, 34, 0.92) !important;
         border-right: 1px solid #30363d;
     }
-    
-    /* Cajas de chat del usuario */
     [data-testid="stChatMessage"]:nth-child(odd) {
         background-color: rgba(31, 36, 45, 0.85);
         border: 1px solid #30363d;
         border-radius: 12px;
     }
-    
-    /* Cajas de chat del asistente (IA) */
     [data-testid="stChatMessage"]:nth-child(even) {
         background-color: rgba(17, 20, 27, 0.85);
         border: 1px solid #21262d;
