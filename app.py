@@ -1,167 +1,99 @@
 
-
-from google import genai
-from google.genai import types
+import os
 import streamlit as st
+from google import genai
+from PIL import Image
 
-# 1. Configuración de la página web
+# Configuración de la página
 st.set_page_config(
-    page_title="Editor Profesional con Gemini", page_icon="✍️", layout="centered"
+    page_title="Redactor y Editor IA",
+    page_icon="📝",
+    layout="centered"
 )
 
-# Estilos CSS personalizados para un diseño moderno e innovador
-st.markdown(
-    """
-    <style>
-    /* Estilo general del fondo y tipografía */
-    .stApp {
-        background-color: #0e1117;
-        color: #f3f4f6;
-    }
-    
-    /* Personalización de los contenedores de chat */
-    .stChatMessage {
-        border-radius: 12px;
-        padding: 1rem;
-        margin-bottom: 1rem;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    }
-    
-    /* Botón de limpiar historial personalizado */
-    .stButton>button {
-        width: 100%;
-        border-radius: 8px;
-        background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
-        color: white;
-        font-weight: 600;
-        border: none;
-        transition: all 0.3s ease;
-    }
-    .stButton>button:hover {
-        opacity: 0.9;
-        transform: translateY(-1px);
-    }
-    </style>
-""",
-    unsafe_allow_html=True,
-)
+st.title("📝 Redactor y Editor Multimodal con Gemini")
+st.write("Pega tu texto, o adjunta una imagen o PDF en la barra lateral para que la IA lo analice, corrija y mejore.")
 
-st.title("✍️ Asistente Editor y Redactor Profesional")
-st.markdown(
-    "Tu espacio inteligente para perfeccionar textos, corregir estilo y"
-    " analizar documentos."
-)
+# 1. Configurar la API Key desde los Secrets de Streamlit o variables de entorno
+if "GEMINI_API_KEY" in st.secrets:
+    api_key = st.secrets["GEMINI_API_KEY"]
+else:
+    api_key = os.environ.get("GEMINI_API_KEY")
 
-# 2. Cargamos la API Key de forma segura desde secrets.toml
-try:
-  API_KEY = st.secrets["GEMINI_API_KEY"]
-except Exception as e:
-  st.error(
-      "⚠️ No se encontró la API Key en secrets.toml. Asegúrate de configurar"
-      " el archivo correctamente."
-  )
-  st.stop()
+if not api_key:
+    st.error("⚠️ Falta configurar la GEMINI_API_KEY en los Secrets de Streamlit.")
+    st.stop()
 
+# Inicializar el cliente oficial de Google GenAI
+client = genai.Client(api_key=api_key)
 
-# Inicializamos el cliente de forma segura con caché
-@st.cache_resource
-def get_gemini_client(api_key):
-  return genai.Client(api_key=api_key)
+# Definir el modelo a utilizar
+MODEL_NAME = "gemini-2.5-flash"
 
-
-client = get_gemini_client(API_KEY)
-
-# 3. Configuramos la personalidad de la IA (Editor y Redactor Profesional)
-configuracion = types.GenerateContentConfig(
-    system_instruction=(
-        "Eres un redactor y editor profesional. Ayudas a mejorar la claridad,"
-        " el tono y la ortografía de cualquier texto que te compartan."
-    ),
-    temperature=0.7,
-)
-
-# 4. Barra lateral con el botón mejorado para limpiar el historial y reiniciar sesión
-with st.sidebar:
-  st.header("⚙️ Controles")
-  if st.button("🗑️ Limpiar Historial y Reiniciar"):
-    st.session_state.messages = []
-    st.session_state.chat_session = client.chats.create(
-        model="gemini-3.8-flash", config=configuracion
-    )
-    st.toast("¡Historial borrado con éxito!", icon="🧹")
-    st.rerun()
-
-  st.markdown("---")
-  st.write("🔒 Aplicación protegida con `secrets.toml`")
-  st.write("🤖 Modelo: `gemini-3.8-flash`")
-
-# Creamos o recuperamos la sesión de chat con gemini-3.8-flash
+# 2. Inicializar la sesión de chat y el historial en st.session_state
 if "chat_session" not in st.session_state:
-  st.session_state.chat_session = client.chats.create(
-      model="gemini-3.8-flash", config=configuracion
-  )
+    st.session_state.chat_session = client.chats.create(model=MODEL_NAME)
 
 if "messages" not in st.session_state:
-  st.session_state.messages = []
+    st.session_state.messages = []
 
-# Mostramos el historial de mensajes en la interfaz
+# 3. Barra lateral (Sidebar) para cargar archivos y reiniciar
+with st.sidebar:
+    st.header("⚙️ Configuración y Archivos")
+    
+    # Cargador de archivos (imágenes y PDFs)
+    uploaded_file = st.file_uploader(
+        "Sube una imagen o un PDF:",
+        type=["png", "jpg", "jpeg", "pdf"]
+    )
+    
+    st.markdown("---")
+    if st.button("🗑️ Limpiar Historial y Reiniciar"):
+        st.session_state.messages = []
+        st.session_state.chat_session = client.chats.create(model=MODEL_NAME)
+        st.rerun()
+
+# 4. Mostrar el historial de mensajes en la interfaz
 for message in st.session_state.messages:
-  with st.chat_message(message["role"]):
-    st.markdown(message["content"])
-    if "image_preview" in message and message["image_preview"]:
-      st.image(message["image_preview"], width=200)
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
 
-# 5. Widget para subir archivos (imágenes o PDFs)
-uploaded_file = st.file_uploader(
-    "Sube una imagen o documento PDF para analizar (opcional):",
-    type=["png", "jpg", "jpeg", "pdf"],
-)
+# 5. Entrada del usuario y lógica de envío
+if prompt := st.chat_input("Escribe tu instrucción o pega tu texto aquí..."):
+    
+    # Mostrar mensaje del usuario en pantalla
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    with st.chat_message("user"):
+        st.markdown(prompt)
+        if uploaded_file is not None:
+            if uploaded_file.type.startswith("image/"):
+                st.image(uploaded_file, width=250, caption="Imagen adjunta")
+            else:
+                st.info(f"📄 PDF adjunto: {uploaded_file.name}")
 
-# Vista previa si es una imagen
-if uploaded_file is not None and uploaded_file.type.startswith("image/"):
-  st.image(uploaded_file, caption="Imagen lista para enviar", width=250)
+    # 6. Preparar el contenido multimodal para Gemini
+    content_to_send = [prompt]
+    
+    if uploaded_file is not None:
+        if uploaded_file.type.startswith("image/"):
+            # Procesar imagen con Pillow
+            img = Image.open(uploaded_file)
+            content_to_send.append(img)
+        elif uploaded_file.type == "application/pdf":
+            # Procesar PDF leyéndolo como bytes
+            pdf_bytes = uploaded_file.getvalue()
+            content_to_send.append({
+                "mime_type": "application/pdf",
+                "data": pdf_bytes
+            })
 
-# 6. Entrada de texto para el usuario
-if prompt := st.chat_input("Escribe tu texto o pregunta para editar..."):
-  content_to_send = [prompt]
-  image_for_history = None
-
-  if uploaded_file is not None:
-    file_bytes = uploaded_file.getvalue()
-    file_mime = uploaded_file.type
-
-    file_part = types.Part.from_bytes(data=file_bytes, mime_type=file_mime)
-    content_to_send.append(file_part)
-
-    if file_mime.startswith("image/"):
-      image_for_history = uploaded_file
-
-  msg_data = {"role": "user", "content": prompt}
-  if image_for_history:
-    msg_data["image_preview"] = image_for_history
-
-  st.session_state.messages.append(msg_data)
-  with st.chat_message("user"):
-    st.markdown(prompt)
-    if image_for_history:
-      st.image(image_for_history, width=200)
-
-  with st.chat_message("assistant"):
-    with st.spinner("Analizando y editando contenido..."):
-      try:
-        response = st.session_state.chat_session.send_message(content_to_send)
-        bot_reply = response.text
-        st.markdown(bot_reply)
-        st.session_state.messages.append(
-            {"role": "assistant", "content": bot_reply}
-        )
-      except Exception as e:
-        st.session_state.chat_session = client.chats.create(
-            model="gemini-3.8-flash", config=configuracion
-        )
-        response = st.session_state.chat_session.send_message(content_to_send)
-        bot_reply = response.text
-        st.markdown(bot_reply)
-        st.session_state.messages.append(
-            {"role": "assistant", "content": bot_reply}
-        )
+    # 7. Enviar la consulta al modelo con manejo de errores (ej. Error 503)
+    with st.chat_message("assistant"):
+        with st.spinner("Analizando contenido..."):
+            try:
+                response = st.session_state.chat_session.send_message(content_to_send)
+                st.markdown(response.text)
+                # Guardar respuesta en el historial
+                st.session_state.messages.append({"role": "assistant", "content": response.text})
+            except Exception as e:
+                st.error("⚠️ El servidor de IA está experimentando alta demanda en este momento. Por favor, espera unos segundos y vuelve a intentarlo.")
