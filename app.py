@@ -11,7 +11,7 @@ st.set_page_config(
     layout="centered"
 )
 st.markdown("""<style>.stApp{background-image:url("https://raw.githubusercontent.com/eminicolas14-sudo/editor-ia-emini/main/jpg.webp");background-size:cover;background-position:center;background-repeat:no-repeat;background-attachment:fixed;}.stApp::before{content:"";position:absolute;top:0;left:0;width:100%;height:100%;background-color:rgba(14,17,23,0.82);z-index:0;}.stApp>*{position:relative;z-index:1;}[data-testid="stSidebar"]{background-color:rgba(22,27,34,0.92)!important;border-right:1px solid #30363d;}[data-testid="stChatMessage"]:nth-child(odd){background-color:rgba(31,36,45,0.85);border:1px solid #30363d;border-radius:12px;}[data-testid="stChatMessage"]:nth-child(even){background-color:rgba(17,20,27,0.85);border:1px solid #21262d;border-radius:12px;}</style>""", unsafe_allow_html=True)
-st.title("📝 Redactor y Editor Multimodal con Gemini")
+
 st.write("Pega tu texto, o adjunta una imagen o PDF en la barra lateral para que la IA lo analice, corrija y mejore.")
 
 # 1. Configurar la API Key desde los Secrets de Streamlit o variables de entorno
